@@ -26,5 +26,6 @@ app.get("/holidays", async (req, res) => {
 });
 
 app.listen(3001, () => {
-  console.log("Backend running on http://localhost:3001");
+  // console.log("Backend running on http://localhost:3001");
+  console.log("Backend running on https://nt-lunch-duty.vercel.app/");
 });
