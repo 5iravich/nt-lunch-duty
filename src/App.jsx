@@ -80,8 +80,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // fetch("http://localhost:3001/holidays")
-    fetch("https://nt-lunch-duty.vercel.app/holidays")
+    fetch("http://localhost:3001/holidays")
       .then(res => res.json())
       .then(data => {
         setHolidays(data);
