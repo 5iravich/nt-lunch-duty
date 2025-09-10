@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import Bg from './assets/bg.png'
 
 const dutyMembers = [
-  "Pao & Fai",
-  "Fon & Meen",
+  "Pao, Meen & Fai",
   "Aote & Aom",
   "Cho & Biw",
   "Tar & Pak"
@@ -11,6 +10,47 @@ const dutyMembers = [
 
 // วันเริ่มต้นหมุนเวร (YYYY-MM-DD)
 const startDate = "2025-08-11";
+
+// ฟังก์ชันแบ่งช่วงเวลา
+function getTimeOfDay() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) return "morning";
+  if (hour >= 12 && hour < 17) return "afternoon";
+  if (hour >= 17 && hour < 20) return "evening";
+  return "night";
+}
+
+// กำหนดสีพื้นหลังตามช่วงเวลา
+function getBackgroundClass() {
+  switch (getTimeOfDay()) {
+    case "morning":
+      return "bg-gradient-to-r from-orange-300 via-yellow-200 to-blue-200 animate-gradient-x";
+    case "afternoon":
+      return "bg-gradient-to-r from-sky-300 via-blue-400 to-indigo-300 animate-gradient-x";
+    case "evening":
+      return "bg-gradient-to-r from-purple-500 via-pink-400 to-orange-400 animate-gradient-x";
+    case "night":
+      return "bg-gradient-to-r from-gray-900 via-blue-900 to-black animate-gradient-x";
+    default:
+      return "bg-gray-200";
+  }
+}
+
+// ไอคอนประกอบตามเวลา
+function getTimeOfDayIcon() {
+  switch (getTimeOfDay()) {
+    case "morning":
+      return "🌅";
+    case "afternoon":
+      return "🌞";
+    case "evening":
+      return "🌇";
+    case "night":
+      return "🌙";
+    default:
+      return "🕒";
+  }
+}
 
 function getNextWorkday(date, holidays) {
   let nextDate = new Date(date);
@@ -64,13 +104,13 @@ function generateDutyTable(startDate, holidays, members) {
 // ฟังก์ชันหา className ของสีตามวัน
 function getDayColor(day) {
   switch (day) {
-    case 0: return "bg-gradient-to-t from-red-800 from-10% via-red-500 via-50% to-rose-300 to-90% text-white backdrop-blur-xs";      // อาทิตย์
-    case 1: return "bg-gradient-to-t from-amber-500 from-10% via-yellow-500 via-50% to-amber-100 to-90% text-white backdrop-blur-xs";   // จันทร์
-    case 2: return "bg-gradient-to-t from-rose-800 from-10% via-pink-500 via-50% to-fuchsia-300 to-90% text-white backdrop-blur-xs";     // อังคาร
-    case 3: return "bg-gradient-to-t from-teal-800 from-10% via-emerald-500 via-50% to-green-300 to-90% text-white backdrop-blur-xs";    // พุธ
-    case 4: return "bg-gradient-to-t from-orange-600 from-10% via-orange-500 via-50% to-yellow-300 to-90% text-white backdrop-blur-xs";   // พฤหัส
-    case 5: return "bg-gradient-to-t from-blue-600 from-10% via-sky-500 via-50% to-cyan-300 to-90% text-white backdrop-blur-xs";     // ศุกร์
-    case 6: return "bg-gradient-to-t from-fuchsia-600 from-10% via-purple-500 via-50% to-violet-300 to-90% text-white backdrop-blur-xs";   // เสาร์
+    case 0: return "bg-gradient-to-t from-red-800/20 from-10% via-red-500/20 via-50% to-rose-300/20 to-90% text-white backdrop-blur-xs";      // อาทิตย์
+    case 1: return "bg-gradient-to-t from-amber-500/20 from-10% via-yellow-500/20 via-50% to-amber-100/20 to-90% text-white backdrop-blur-xs";   // จันทร์
+    case 2: return "bg-gradient-to-t from-rose-800/20 from-10% via-pink-500/20 via-50% to-fuchsia-300/20 to-90% text-white backdrop-blur-xs";     // อังคาร
+    case 3: return "bg-gradient-to-t from-teal-800/20 from-10% via-emerald-500/20 via-50% to-green-300/20 to-90% text-white backdrop-blur-xs";    // พุธ
+    case 4: return "bg-gradient-to-t from-orange-600/20 from-10% via-orange-500/20 via-50% to-yellow-300/20 to-90% text-white backdrop-blur-xs";   // พฤหัส
+    case 5: return "bg-gradient-to-t from-blue-600/20 from-10% via-sky-500/20 via-50% to-cyan-300/20 to-90% text-white backdrop-blur-xs";     // ศุกร์
+    case 6: return "bg-gradient-to-t from-fuchsia-600/20 from-10% via-purple-500/20 via-50% to-violet-300/20 to-90% text-white backdrop-blur-xs";   // เสาร์
     default: return "bg-gray-300 text-black";
   }
 }
@@ -78,6 +118,8 @@ function getDayColor(day) {
 export default function App() {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [time, setTime] = useState(new Date());
 
   useEffect(() => {
     fetch("http://localhost:3001/holidays")
@@ -92,8 +134,20 @@ export default function App() {
       });
   }, []);
 
+   useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   if (loading) {
-    return <p>กำลังโหลดข้อมูล...</p>;
+    return (
+    <div className="flex items-center justify-center h-screen w-full">
+      <p className="text-lg font-semibold">กำลังโหลดข้อมูล...</p>
+    </div>
+  );
   }
 
   const dutyTable = generateDutyTable(startDate, holidays, dutyMembers);
@@ -110,16 +164,22 @@ export default function App() {
   const todayColor = getDayColor(today.getDay());
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Kanit" }}>
-      
+    <div className={`h-screen w-full flex flex-col items-center justify-start p-6 relative transition-all duration-1000 ${getBackgroundClass()}`} style={{ fontFamily: "Kanit" }}>
+    <div className="absolute top-4 left-6 text-lg font-semibold text-white drop-shadow-lg">
+      {time.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+    </div>
+      {/* ไอคอนมุมขวาบน */}
+      <div className="absolute top-4 right-6 text-4xl drop-shadow-lg">
+        {getTimeOfDayIcon()}
+      </div>
       {/* Card วันนี้ */}
-      <div className={`shadow-md rounded-2xl p-6 text-center ${todayColor} transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-indigo-500 cursor-pointer`}>
+      <div className={`mt-12 shadow-md rounded-2xl px-18 py-10 text-center ${todayColor} transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 cursor-pointer`}>
         <h1 className="text-xl font-bold mb-2">🕛</h1>
         <h2 className="text-xl font-bold mb-2">เวรเที่ยงวันนี้</h2>
         {todayDuty ? (
           <div>
-            <p className="text-lg text-gray-600">{todayDuty.date}</p>
-            <p className="text-2xl font-bold text-amber-600 mt-2">
+            <p className="text-lg text-gray-50">{todayDuty.date}</p>
+            <p className="text-2xl font-bold text-white-300 mt-2">
               {todayDuty.person}
             </p>
           </div>
@@ -128,15 +188,15 @@ export default function App() {
         )}
       </div>
 
-      <h2 className="pt-8 pb-3 text-center">ตารางเวรเที่ยง ( ล่วงหน้า 7 วัน )</h2>
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-neutral-700" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+      <h2 className="pt-8 pb-4 text-center">ตารางเวรเที่ยง ( ล่วงหน้า 7 วัน )</h2>
+      <table className="divide-y divide-gray-200 bg-white/50 backdrop-blur-xs rounded-2xl transition delay-150 duration-300 ease-in-out hover:scale-102" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">วันที่</th>
-            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">ผู้รับผิดชอบ</th>
+            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase">วันที่</th>
+            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase">ผู้รับผิดชอบ</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200 dark:divide-neutral-700">
+        <tbody className="divide-y divide-gray-200" >
           {dutyTable.map((row, index) => {
             const todayStr = new Date().toLocaleDateString("th-TH", {
               weekday: "short",
@@ -150,16 +210,21 @@ export default function App() {
             return (
               <tr
                 key={index}
-                className={`hover:bg-gray-100 dark:hover:bg-neutral-700 ${isToday ? "bg-yellow-200 font-bold" : ""}`}
+                className={`hover:bg-gray-100  ${isToday ? "text-white bg-sky-600/20 font-bold" : ""}`}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800 dark:text-neutral-200">{row.date}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800 dark:text-neutral-200">{row.person}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.date}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{row.person}</td>
               </tr>
             );
-          })}
+          })}<thead>
+          <tr>
+            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase"></th>
+            <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase"></th>
+          </tr>
+        </thead>
         </tbody>
       </table>
-      <div><p className="pt-5 text-xs text-center text-gray-500">Made with ❤ by Cho Hae</p></div>
+      <div><p className="pt-5 text-xs text-center text-white">Made with ❤ by Cho Hae</p></div>
     </div>
   );
 }
