@@ -4,6 +4,7 @@ import ical from "ical";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
+import si from "systeminformation";
 
 const app = express();
 app.use(cors());
@@ -42,7 +43,11 @@ app.get("*", (req, res) => {
 });
 // =================================
 
+
+
+//=================================
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+

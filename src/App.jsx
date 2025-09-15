@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Bg from './assets/bg.png'
 
 const dutyMembers = [
@@ -154,9 +155,6 @@ function generateMonthlyDutyCalendar(startDate, holidays, members) {
   return calendar;
 }
 
-
-
-
 export default function App() {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -232,13 +230,25 @@ export default function App() {
           <p className="font-bold">วันนี้ไม่มีเวร ( วันหยุด )</p>
         )}
       </div>
+
       <div
         className=""
         onMouseEnter={() => setShowFullCalendar(true)}
         onMouseLeave={() => setShowFullCalendar(false)}
       >
-      <h2 className="pt-8 pb-4 text-center text-gray-700">ตารางเวรเที่ยง ( ล่วงหน้า 7 วัน )</h2>
-      <table className="divide-y divide-gray-200 bg-white/30 backdrop-blur-xs rounded-2xl hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+        <h2 className="pt-8 pb-4 text-center text-gray-700">ตารางเวรเที่ยงล่วงหน้า</h2>
+      <div className="flex">
+      
+      <motion.table
+      initial={false}
+      animate={showFullCalendar ? { y: -20, scale: 0.95 } : { y: 0, scale: 1 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="mx-2 divide-y divide-gray-200 bg-white/30 backdrop-blur-xs rounded-2xl hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102"
+      border="1"
+      cellPadding="6"
+      style={{ borderCollapse: "collapse" }}
+    >
+      {/* <table className="mx-2 divide-y divide-gray-200 bg-white/30 backdrop-blur-xs rounded-2xl hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}> */}
         <thead>
           <tr>
             <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase">วันที่</th>
@@ -259,7 +269,7 @@ export default function App() {
             return (
               <tr
                 key={index}
-                className={`hover:bg-gray-100  ${isToday ? "text-white bg-sky-600/20 font-bold" : ""}`}
+                className={`hover:bg-sky-500/30  ${isToday ? "text-white bg-sky-500/70 font-bold" : ""}`}
               >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.date}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{row.person}</td>
@@ -272,14 +282,19 @@ export default function App() {
           </tr>
         </thead>
         </tbody>
-      </table>
+      </motion.table>
       
-      </div>
-      <div><p className="pt-5 text-xs text-center text-gray-700">Made with ❤ by Cho Hae</p></div>
-
-      {/* Popup ปฏิทินทั้งเดือนแบบ Grid */}
+           {/* Popup ปฏิทินทั้งเดือนแบบ Grid */}
+           <AnimatePresence>
         {showFullCalendar && (
-          <div className="z-50 bg-white/70 shadow-xl rounded-lg p-4 z-50 transition-all duration-300">
+          <motion.div
+      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="mx-2 z-50 bg-white/30 shadow-xl rounded-xl p-6 transition"
+    >
+          <div className="mx-2 z-50 bg-white/30 shadow-xl rounded-xl p-6 z-50 transition hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102">
             <h3 className="font-bold text-gray-600 text-center text-lg mb-3">📅 ปฏิทินเวรเที่ยงประจำเดือน</h3>
             <div className="grid grid-cols-7 gap-2 text-center text-sm">
               {/* หัวตารางวัน */}
@@ -293,9 +308,9 @@ export default function App() {
                 ) : (
                   <div
                     key={idx}
-                    className={`p-1 border rounded-lg ${day.isToday ? "bg-yellow-200 font-bold" : "bg-gray-50/50"} hover:bg-gray-100`}
+                    className={`p-2 rounded-xl ${day.isToday ? "bg-sky-500/70 font-bold" : "bg-white/30"} hover:bg-sky-500/30`}
                   >
-                    <div className="text-xs">{day.date}</div>
+                    <div className="text-xs text-gray-600">{day.date}</div>
                     {day.dutyPerson && (
                       <div className="text-[0.65rem] mt-1 text-gray-600">{day.dutyPerson}</div>
                     )}
@@ -304,7 +319,14 @@ export default function App() {
               )}
             </div>
           </div>
+          </motion.div>
         )}
+        </AnimatePresence>
+      </div>
+      </div>
+      <div><p className="pt-5 text-xs text-center text-gray-700">Made with ❤ by Cho Hae</p></div>
+
+     
     </div>
   );
 }
