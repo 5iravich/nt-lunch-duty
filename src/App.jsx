@@ -24,15 +24,15 @@ function getTimeOfDay() {
 function getBackgroundClass() {
   switch (getTimeOfDay()) {
     case "morning":
-      return "bg-gradient-to-r from-orange-300 via-yellow-200 to-blue-200 animate-gradient-x";
+      return "bg-gradient-to-r from-orange-300 via-yellow-300 to-white animate-gradient-x";
     case "afternoon":
-      return "bg-gradient-to-r from-sky-300 via-blue-400 to-indigo-300 animate-gradient-x";
+      return "bg-gradient-to-r from-sky-300 via-blue-300 to-white animate-gradient-x";
     case "evening":
-      return "bg-gradient-to-r from-purple-500 via-pink-400 to-orange-400 animate-gradient-x";
+      return "bg-gradient-to-r from-purple-300 via-pink-300 to-white animate-gradient-x";
     case "night":
-      return "bg-gradient-to-r from-gray-900 via-blue-900 to-black animate-gradient-x";
+      return "bg-gradient-to-r from-gray-300 via-blue-300 to-white animate-gradient-x";
     default:
-      return "bg-gray-200";
+      return "bg-gray-300";
   }
 }
 
@@ -104,20 +104,64 @@ function generateDutyTable(startDate, holidays, members) {
 // ฟังก์ชันหา className ของสีตามวัน
 function getDayColor(day) {
   switch (day) {
-    case 0: return "bg-gradient-to-t from-red-800/20 from-10% via-red-500/20 via-50% to-rose-300/20 to-90% text-white backdrop-blur-xs";      // อาทิตย์
-    case 1: return "bg-gradient-to-t from-amber-500/20 from-10% via-yellow-500/20 via-50% to-amber-100/20 to-90% text-white backdrop-blur-xs";   // จันทร์
-    case 2: return "bg-gradient-to-t from-rose-800/20 from-10% via-pink-500/20 via-50% to-fuchsia-300/20 to-90% text-white backdrop-blur-xs";     // อังคาร
-    case 3: return "bg-gradient-to-t from-teal-800/20 from-10% via-emerald-500/20 via-50% to-green-300/20 to-90% text-white backdrop-blur-xs";    // พุธ
-    case 4: return "bg-gradient-to-t from-orange-600/20 from-10% via-orange-500/20 via-50% to-yellow-300/20 to-90% text-white backdrop-blur-xs";   // พฤหัส
-    case 5: return "bg-gradient-to-t from-blue-600/20 from-10% via-sky-500/20 via-50% to-cyan-300/20 to-90% text-white backdrop-blur-xs";     // ศุกร์
-    case 6: return "bg-gradient-to-t from-fuchsia-600/20 from-10% via-purple-500/20 via-50% to-violet-300/20 to-90% text-white backdrop-blur-xs";   // เสาร์
-    default: return "bg-gray-300 text-black";
+    case 0: return "bg-white/30 ring-2 ring-red-300/50 shadow-lg shadow-red-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";      // อาทิตย์
+    case 1: return "bg-white/30 ring-2 ring-yellow-300/50 shadow-lg shadow-yellow-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";   // จันทร์
+    case 2: return "bg-white/30 ring-2 ring-pink-300/50 shadow-lg shadow-pink-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";     // อังคาร
+    case 3: return "bg-white/30 ring-2 ring-green-300/50 shadow-lg shadow-green-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";    // พุธ
+    case 4: return "bg-white/30 ring-2 ring-orange-300/50 shadow-lg shadow-orange-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";   // พฤหัส
+    case 5: return "bg-white/30 ring-2 ring-blue-300/50 shadow-lg shadow-blue-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";     // ศุกร์
+    case 6: return "bg-white/30 ring-2 ring-purple-300/50 shadow-lg shadow-purple-500/50 text-gray-900 backdrop-blur-xs hover:ring-0";   // เสาร์
+    default: return "bg-white/30 text-gray-900";
   }
 }
+
+// ฟังก์ชันสร้างปฏิทินเวรทั้งเดือนแบบ Grid
+function generateMonthlyDutyCalendar(startDate, holidays, members) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+
+  const daysInMonth = lastDay.getDate();
+  const startWeekday = firstDay.getDay(); // 0=อาทิตย์, 1=จันทร์...
+  const calendar = [];
+
+  // วนวันในเดือน
+  for (let day = 1; day <= daysInMonth; day++) {
+    const current = new Date(year, month, day);
+    const dayOfWeek = current.getDay();
+    const dateStr = current.toISOString().split("T")[0];
+
+    let dutyPerson = null;
+    if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays.includes(dateStr)) {
+      const workdaysPassed = countWorkdays(new Date(startDate), current, holidays) - 1;
+      dutyPerson = members[workdaysPassed % members.length];
+    }
+
+    calendar.push({
+      date: day,
+      isToday: current.toDateString() === today.toDateString(),
+      dutyPerson,
+    });
+  }
+
+  // เติมช่องว่างก่อนวันแรก
+  for (let i = 0; i < startWeekday; i++) {
+    calendar.unshift({ empty: true });
+  }
+
+  return calendar;
+}
+
+
+
 
 export default function App() {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const [showFullCalendar, setShowFullCalendar] = useState(false);
 
   const [time, setTime] = useState(new Date());
 
@@ -151,6 +195,7 @@ export default function App() {
   }
 
   const dutyTable = generateDutyTable(startDate, holidays, dutyMembers);
+  const monthlyCalendar = generateMonthlyDutyCalendar(startDate, holidays, dutyMembers);
 
   // หา duty ของวันนี้
   const today = new Date();
@@ -173,13 +218,13 @@ export default function App() {
         {getTimeOfDayIcon()}
       </div>
       {/* Card วันนี้ */}
-      <div className={`mt-12 shadow-md rounded-2xl px-18 py-10 text-center ${todayColor} transition delay-150 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 cursor-pointer`}>
+      <div className={`mt-12 shadow-md rounded-2xl px-18 py-10 text-center ${todayColor} transition delay-150 duration-300 ease-in-out hover:shadow-xl hover:-translate-y-3px hover:scale-110 cursor-pointer`}>
         <h1 className="text-xl font-bold mb-2">🕛</h1>
         <h2 className="text-xl font-bold mb-2">เวรเที่ยงวันนี้</h2>
         {todayDuty ? (
           <div>
-            <p className="text-lg text-gray-50">{todayDuty.date}</p>
-            <p className="text-2xl font-bold text-white-300 mt-2">
+            <p className="text-lg text-gray-900">{todayDuty.date}</p>
+            <p className="text-2xl font-bold text-gray-900 mt-2">
               {todayDuty.person}
             </p>
           </div>
@@ -187,9 +232,13 @@ export default function App() {
           <p className="font-bold">วันนี้ไม่มีเวร ( วันหยุด )</p>
         )}
       </div>
-
-      <h2 className="pt-8 pb-4 text-center">ตารางเวรเที่ยง ( ล่วงหน้า 7 วัน )</h2>
-      <table className="divide-y divide-gray-200 bg-white/50 backdrop-blur-xs rounded-2xl transition delay-150 duration-300 ease-in-out hover:scale-102" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
+      <div
+        className=""
+        onMouseEnter={() => setShowFullCalendar(true)}
+        onMouseLeave={() => setShowFullCalendar(false)}
+      >
+      <h2 className="pt-8 pb-4 text-center text-gray-700">ตารางเวรเที่ยง ( ล่วงหน้า 7 วัน )</h2>
+      <table className="divide-y divide-gray-200 bg-white/30 backdrop-blur-xs rounded-2xl hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102" border="1" cellPadding="6" style={{ borderCollapse: "collapse" }}>
         <thead>
           <tr>
             <th scope="col" className="px-6 py-3 text-start text-xs font-medium text-gray-700 uppercase">วันที่</th>
@@ -224,7 +273,38 @@ export default function App() {
         </thead>
         </tbody>
       </table>
-      <div><p className="pt-5 text-xs text-center text-white">Made with ❤ by Cho Hae</p></div>
+      
+      </div>
+      <div><p className="pt-5 text-xs text-center text-gray-700">Made with ❤ by Cho Hae</p></div>
+
+      {/* Popup ปฏิทินทั้งเดือนแบบ Grid */}
+        {showFullCalendar && (
+          <div className="z-50 bg-white/70 shadow-xl rounded-lg p-4 z-50 transition-all duration-300">
+            <h3 className="font-bold text-gray-600 text-center text-lg mb-3">📅 ปฏิทินเวรเที่ยงประจำเดือน</h3>
+            <div className="grid grid-cols-7 gap-2 text-center text-sm">
+              {/* หัวตารางวัน */}
+              {["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"].map((day, i) => (
+                <div key={i} className="font-bold text-gray-600">{day}</div>
+              ))}
+              {/* วันในเดือน */}
+              {monthlyCalendar.map((day, idx) =>
+                day.empty ? (
+                  <div key={idx}></div>
+                ) : (
+                  <div
+                    key={idx}
+                    className={`p-1 border rounded-lg ${day.isToday ? "bg-yellow-200 font-bold" : "bg-gray-50/50"} hover:bg-gray-100`}
+                  >
+                    <div className="text-xs">{day.date}</div>
+                    {day.dutyPerson && (
+                      <div className="text-[0.65rem] mt-1 text-gray-600">{day.dutyPerson}</div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
     </div>
   );
 }
