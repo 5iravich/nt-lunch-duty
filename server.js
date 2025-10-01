@@ -4,7 +4,6 @@ import ical from "ical";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import si from "systeminformation";
 
 const app = express();
 app.use(cors());
@@ -27,6 +26,7 @@ app.get("/holidays", async (req, res) => {
     res.status(500).json({ error: "Unable to fetch holidays" });
   }
 });
+
 
 // app.listen(3001, () => {
 //   console.log("Backend running on http://localhost:3001");

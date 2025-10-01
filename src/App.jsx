@@ -136,7 +136,7 @@ function generateMonthlyDutyCalendar(startDate, holidays, members) {
 
     let dutyPerson = null;
     if (dayOfWeek >= 1 && dayOfWeek <= 5 && !holidays.includes(dateStr)) {
-      const workdaysPassed = countWorkdays(new Date(startDate), current, holidays) - 1;
+      const workdaysPassed = countWorkdays(new Date(startDate), current, holidays);
       dutyPerson = members[workdaysPassed % members.length];
     }
 
@@ -155,6 +155,7 @@ function generateMonthlyDutyCalendar(startDate, holidays, members) {
   return calendar;
 }
 
+
 export default function App() {
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -163,8 +164,24 @@ export default function App() {
 
   const [time, setTime] = useState(new Date());
 
+  // อันนี้ API วันหยุด Google
+  // useEffect(() => {
+  //   fetch("http://localhost:3001/holidays")
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       setHolidays(data);
+  //       setLoading(false);
+  //     })
+  //     .catch(err => {
+  //       console.error("Error fetching holidays:", err);
+  //       setLoading(false);
+  //     });
+  // }, []);
+
+  // ไฟล์วันหยุดจาก JSON
   useEffect(() => {
-    fetch("http://localhost:3001/holidays")
+    // โหลด holidays.json จาก public/
+    fetch("/holidays.json")
       .then(res => res.json())
       .then(data => {
         setHolidays(data);
@@ -208,13 +225,16 @@ export default function App() {
 
   return (
     <div className={`h-screen w-full flex flex-col items-center justify-start p-6 relative transition-all duration-1000 ${getBackgroundClass()}`} style={{ fontFamily: "Kanit" }}>
-    <div className="absolute top-4 left-6 text-lg font-semibold text-white drop-shadow-lg">
+    
+    <div className="absolute top-4 left-6 px-3 text-lg font-semibold text-white bg-black/30 rounded-lg drop-shadow-lg">
       {time.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
     </div>
+
       {/* ไอคอนมุมขวาบน */}
       <div className="absolute top-4 right-6 text-4xl drop-shadow-lg">
         {getTimeOfDayIcon()}
       </div>
+
       {/* Card วันนี้ */}
       <div className={`mt-12 shadow-md rounded-2xl px-18 py-10 text-center ${todayColor} transition delay-150 duration-300 ease-in-out hover:shadow-xl hover:-translate-y-3px hover:scale-110 cursor-pointer`}>
         <h1 className="text-xl font-bold mb-2">🕛</h1>
@@ -231,6 +251,7 @@ export default function App() {
         )}
       </div>
 
+      
       <div
         className=""
         onMouseEnter={() => setShowFullCalendar(true)}
@@ -284,16 +305,13 @@ export default function App() {
         </tbody>
       </motion.table>
       
-           {/* Popup ปฏิทินทั้งเดือนแบบ Grid */}
-           <AnimatePresence>
-        {showFullCalendar && (
-          <motion.div
-      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="mx-2 z-50 bg-white/30 shadow-xl rounded-xl p-6 transition"
-    >
+      {/* Popup ปฏิทินทั้งเดือนแบบ Grid */}
+      <AnimatePresence> {showFullCalendar && (
+          <motion.div initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="mx-2 z-50 bg-white/30 shadow-xl rounded-xl p-6 transition">
           <div className="mx-2 z-50 bg-white/30 shadow-xl rounded-xl p-6 z-50 transition hover:shadow-xl transition delay-150 duration-300 ease-in-out hover:scale-102">
             <h3 className="font-bold text-gray-600 text-center text-lg mb-3">📅 ปฏิทินเวรเที่ยงประจำเดือน</h3>
             <div className="grid grid-cols-7 gap-2 text-center text-sm">
