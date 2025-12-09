@@ -126,5 +126,6 @@ return (score / maxScore) * 85; // ควบคุมความยาวขอ
       </div>
       </div>
       </div>
+      
   );
 }
